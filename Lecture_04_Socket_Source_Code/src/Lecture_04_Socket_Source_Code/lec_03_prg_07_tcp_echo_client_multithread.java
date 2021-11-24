@@ -28,13 +28,12 @@ class ClientReceiver extends Thread {
     public void run() {
     	try {
     		recv = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    	}catch(IOException e){}
-    	try {
-	        while(recv != null) {
-	                if(recv.equals("quit")) {
-	                	break;
-	                }
-	                System.out.println("> received: " + recv.readLine());  
+	        while(true) {
+	        	String s = recv.readLine();
+    			if (s.equals("quit")) {
+    				break;
+    			}
+	                System.out.println("> received: " + s);  
 	        }
             socket.close();
             System.out.println("> echo-cilent is de-activated");
@@ -63,7 +62,7 @@ class ClientSender extends Thread {
     			String s = in.readLine();
     			pwSend.println(s);
     			pwSend.flush();
-    			if(s.equals("quit")){
+    			if (s.equals("quit")) {
     				break;
     			}
     		}

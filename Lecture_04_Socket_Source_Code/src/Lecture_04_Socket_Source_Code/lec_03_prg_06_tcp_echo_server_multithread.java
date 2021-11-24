@@ -11,7 +11,6 @@ public class lec_03_prg_06_tcp_echo_server_multithread {
             while(true){   
                 Socket sock = server.accept();
                 EchoThread echothread = new EchoThread(sock);
-                echothread.setDaemon(true);
                 echothread.start();
                 System.out.println("> server loop running in thread (main thread)" +
                 echothread.getName());
@@ -41,9 +40,6 @@ class EchoThread extends Thread{
                 System.out.println("> echoed : " + line + " by " + currentThread());
                 pw.println(line);
                 pw.flush();
-                if (line.equals("quit")) {
-                	break;
-                }
             }   
             pw.close();   
             br.close();   

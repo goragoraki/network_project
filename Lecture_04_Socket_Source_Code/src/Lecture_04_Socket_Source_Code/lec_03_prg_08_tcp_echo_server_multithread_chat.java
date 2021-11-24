@@ -58,7 +58,6 @@ class ServerManager extends Thread {
 		                sendMsg(line);
 		            }
 		        lec_03_prg_08_tcp_echo_server_multithread_chat.cnt -= 1;
-	            socket.close();
             }catch(Exception e) {}
 	    }
 	     
