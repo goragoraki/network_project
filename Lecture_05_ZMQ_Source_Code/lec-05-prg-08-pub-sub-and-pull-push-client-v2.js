@@ -1,3 +1,5 @@
+const { time } = require("console");
+
 var zmq = require("zeromq"),
     sock = zmq.socket("sub"),
     pusher = zmq.socket("push");
@@ -7,9 +9,12 @@ pusher.connect("tcp://127.0.0.1:3001");
 sock.subscribe("kitty cats");
 console.log("Subscriber connected to port 3000");
 
-sock.on("message", function(topic, sm) {
+
+clientID = process.argv[2];
+sock.on("message", function (topic, sm) {
+    msg = sm.toString();
     console.log(
-        "I received a message ", sm.toString());
+        `${clientID}: receive status => ${msg}`);
 });
 
 function getRandomInt(min, max) {
@@ -20,8 +25,13 @@ function getRandomInt(min, max) {
 
 setInterval(function () {
     rnum = getRandomInt(1, 100)
-    if (rnum < 10) {
-        console.log("I: sending message ", rnum);
-        pusher.send(rnum);
-    }
+  if (rnum < 10) {
+    console.log(`${clientID}": send status - activated `);
+    msg = "(" + clientID + ":ON)"
+    pusher.send(msg);
+  } else if (rnum > 90) {
+    console.log(`${clientID}": send status - deactivated `);
+    msg = "(" + clientID + ":OFF)"
+    pusher.send(msg);
+  }
 }, 100)
