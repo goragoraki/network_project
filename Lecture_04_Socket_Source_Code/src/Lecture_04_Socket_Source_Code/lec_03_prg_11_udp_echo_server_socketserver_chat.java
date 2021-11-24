@@ -1,37 +1,56 @@
 package Lecture_04_Socket_Source_Code;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.util.ArrayList;
-
-public class lec_03_prg_11_udp_echo_server_socketserver_chat {
-	
-	public static void main(String[] args) {
-		ArrayList<DatagramPacket> list = new ArrayList<>();
-		DatagramSocket datagramSocket = null;
-		DatagramPacket rcvP =null;
-		DatagramPacket sendP = null;
-		int PORT = 65456;
-		try {
-			datagramSocket = new DatagramSocket(PORT);
-			System.out.println("> echo-server is activated");
-			while(true) {
-				byte[] buffer = new byte[1024];
-				rcvP = new DatagramPacket(buffer, buffer.length);
-				datagramSocket.receive(rcvP);
-				list.add(rcvP);
-				String msg = "";
-				for(DatagramPacket sndP: list) {
-					msg = new String(sndP.getData(),0,sndP.getLength());
-					sendP = new DatagramPacket(sndP.getData(), sndP.getData().length, 
-							sndP.getAddress(), sndP.getPort());
-					datagramSocket.send(sendP);
+import java.net.*; 
+import java.util.HashSet;
+ 
+public class lec_03_prg_11_udp_echo_server_socketserver_chat {	
+ 
+	private static HashSet<Integer> portSet = new HashSet<Integer>();
+	public static void main(String args[]) throws Exception {
+      
+        int serverport = 65456;        
+	    DatagramSocket udpServerSocket = new DatagramSocket(serverport);        
+ 
+	    System.out.println("echo-server is activated");
+ 
+	    while(true)
+		{
+			byte[] receiveData = new byte[1024];          
+			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+			udpServerSocket.receive(receivePacket);           
+			String clientMessage = (new String(receivePacket.getData())).trim();
+			InetAddress clientIP = receivePacket.getAddress();           
+			int clientport = receivePacket.getPort();
+			if(clientMessage.equals("#REG")) {
+				portSet.add(clientport);
+				System.out.println("client registered ( " + clientIP + ", " + clientport+ " )");
+			}	
+			if(portSet.contains(clientport) && !clientMessage.equals("#REG")) {
+				if(clientMessage.equals("#DEREG")) {
+					System.out.println("client de-registered ( " + clientIP + ", " + clientport+ " )");         
+					byte[] sendData  = new byte[1024];
+					sendData = clientMessage.getBytes();
+					DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, clientIP, clientport);         
+					udpServerSocket.send(sendPacket); 
+					portSet.remove(clientport);
+				}else 
+				{
+					byte[] sendData  = new byte[1024];
+		 
+					sendData = clientMessage.getBytes();
+					System.out.println("reveived ( " + clientMessage + " )" + " and echoed to " + portSet.size() + " clients");
+					for(Integer port : portSet) 
+					{
+							DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, clientIP, port);           
+							udpServerSocket.send(sendPacket);    
+					}
 				}
-				System.out.println("> echoed: " + msg);
 			}
-		}catch(Exception e) {
-			e.printStackTrace();
-			System.out.println("> echo-server is de-activated");
-		}
-	}
+			else {
+				if(!clientMessage.equals("#REG")) {
+					System.out.println("no clients to echo");
+				}	
+			}	
+        }
+    }
 }
